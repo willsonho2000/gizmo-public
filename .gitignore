@@ -1,0 +1,13 @@
+# compilation files
+*.o
+*/*.o
+         
+
+# output & initial files
+output/     
+TNG/   
+music/     
+makedisk/
+*.out 
+*.err      
+

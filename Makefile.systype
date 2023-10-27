@@ -6,11 +6,11 @@
 #
 #############
 
-SYSTYPE="Frontera"
+#SYSTYPE="Frontera"
 #SYSTYPE="Stampede2"
 #SYSTYPE="Bridges2"
 #SYSTYPE="Anvil"
-#SYSTYPE="Wheeler"
+SYSTYPE="Wheeler"
 #SYSTYPE="CaltechHPC"
 #SYSTYPE="MacBookPro"
 #SYSTYPE="Quest"
