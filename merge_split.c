@@ -78,7 +78,8 @@ int does_particle_need_to_be_merged(int i)
     when particles become too massive, but it could also be done when Hsml gets very large, densities are high, etc */
 int does_particle_need_to_be_split(int i)
 {
-    if(P[i].Type != 0) {return 0;} // default behavior: only gas particles split //
+    // if(P[i].Type != 0) {return 0;} // default behavior: only gas particles split //
+    if ( (P[i].Type != 0) && (P[i].Type != 1) ) {return 0;} // only gas and dm particles split //
 #ifdef PREVENT_PARTICLE_MERGE_SPLIT
     return 0;
 #else
@@ -107,6 +108,7 @@ int does_particle_need_to_be_split(int i)
 double target_mass_renormalization_factor_for_mergesplit(int i, int split_key)
 {
     double ref_factor=1.0;
+    if ( P[i].Type == 1) {ref_factor = 5.3;}
 #if defined(SINGLE_STAR_AND_SSP_HYBRID_MODEL)
     if(P[i].Type==0)
     {

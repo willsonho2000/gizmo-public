@@ -8,6 +8,7 @@ output/
 TNG/   
 music/     
 makedisk/
+scripts/tested_problems/
 *.out 
 *.err      
 
