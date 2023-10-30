@@ -176,6 +176,7 @@ void merge_and_split_particles(void)
 
     int target_for_merger,dummy=0,numngb_inbox,startnode,i,j,n; double threshold_val;
     int n_particles_merged,n_particles_split,n_particles_gas_split,MPI_n_particles_merged,MPI_n_particles_split,MPI_n_particles_gas_split;
+    int n_particles_dm_split = 0, MPI_n_particles_dm_split = 0;
     Ngblist = (int *) mymalloc("Ngblist",NumPart * sizeof(int));
     Gas_split=0; n_particles_merged=0; n_particles_split=0; n_particles_gas_split=0; MPI_n_particles_merged=0; MPI_n_particles_split=0; MPI_n_particles_gas_split=0;
     Ptmp = (struct flags_merg_split *) mymalloc("Ptmp", NumPart * sizeof(struct flags_merg_split));
@@ -254,9 +255,12 @@ void merge_and_split_particles(void)
         }
 #endif
 #if defined(GALSF)
-        if(((P[i].Type==0)||(P[i].Type==4))&&(TimeBinActive[P[i].TimeBin])) /* if SF active, allow star particles to merge if they get too small */
+        // if(((P[i].Type==0)||(P[i].Type==4))&&(TimeBinActive[P[i].TimeBin])) /* if SF active, allow star particles to merge if they get too small */
+        // enable split and merge for dm particle
+        if(((P[i].Type==0)|| (P[i].Type == 1) ||(P[i].Type==4))&&(TimeBinActive[P[i].TimeBin])) /* if SF active, allow star particles to merge if they get too small */
 #else
-        if((P[i].Type==0)&&(TimeBinActive[P[i].TimeBin])) /* default mode, only gas particles merged */
+        // if((P[i].Type==0)&&(TimeBinActive[P[i].TimeBin])) /* default mode, only gas particles merged */
+        if(((P[i].Type==0) || (P[i].Type == 1))&&(TimeBinActive[P[i].TimeBin])) /* gas and dm particles merged */
 #endif
         {
             /* we have a gas [or eligible star] particle, ask if it needs to be merged */
@@ -309,7 +313,18 @@ void merge_and_split_particles(void)
             else if(does_particle_need_to_be_split(i) && (Ptmp[i].flag == 0)) {
                 /* if splitting: do a neighbor loop ON THE SAME DOMAIN to determine the nearest particle (so dont overshoot it) */
                 startnode=All.MaxPart;
-                numngb_inbox = ngb_treefind_variable_targeted(P[i].Pos,PPP[i].Hsml,-1,&startnode,0,&dummy,&dummy,Pi_BITFLAG); // search for particles of matching type
+                switch ( P[i].Type )
+                {
+                case 1:
+                    numngb_inbox = ngb_treefind_variable_targeted(P[i].Pos,PPP[i].AGS_Hsml,-1,&startnode,0,&dummy,&dummy,Pi_BITFLAG); // search for particles of matching type    
+                    break;
+                
+                default:
+                    numngb_inbox = ngb_treefind_variable_targeted(P[i].Pos,PPP[i].Hsml,-1,&startnode,0,&dummy,&dummy,Pi_BITFLAG); // search for particles of matching type
+                    break;
+                }
+                // numngb_inbox = ngb_treefind_variable_targeted(P[i].Pos,PPP[i].Hsml,-1,&startnode,0,&dummy,&dummy,Pi_BITFLAG); // search for particles of matching type
+                    // printf( "split on gas particles, numngb=%d with hsml=%.3f, ags_hsml=%.3f\n", numngb_inbox, (float) PPP[i].Hsml, (float) PPP[i].AGS_Hsml );
                 if(numngb_inbox>0)
                 {
                     target_for_merger = -1;
@@ -351,7 +366,11 @@ void merge_and_split_particles(void)
         }
         if (Ptmp[i].flag == 2) {
             int did_split = split_particle_i(i, n_particles_split, Ptmp[i].target_index);
-            if(did_split == 1) {n_particles_split++; if(P[i].Type==0) {n_particles_gas_split++;}} else {failed_splits++;}
+            // if(did_split == 1) {n_particles_split++; if(P[i].Type==0) {n_particles_gas_split++;}} else {failed_splits++;}
+            if(did_split == 1) {n_particles_split++; 
+                if(P[i].Type==0) {n_particles_gas_split++;}} 
+                else if (P[i].Type == 1) {n_particles_dm_split++;}
+                else {failed_splits++;}
         }
     }
     if(failed_splits) {printf ("On Task=%d with NumPart=%d we tried and failed to split %d elements, after running out of space (REDUC_FAC*All.MaxPart=%d, REDUC_FAC*All.MaxPartGas=%d ).\n We did split %d total (%d gas) elements. Try using more nodes, or raising PartAllocFac, or changing the split conditions to avoid this.\n", ThisTask, NumPart, failed_splits, (int)(REDUC_FAC*All.MaxPart), (int)(REDUC_FAC*All.MaxPartGas), n_particles_split, n_particles_gas_split); fflush(stdout);}
@@ -368,11 +387,13 @@ void merge_and_split_particles(void)
     MPI_Allreduce(&n_particles_merged, &MPI_n_particles_merged, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
     MPI_Allreduce(&n_particles_split, &MPI_n_particles_split, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
     MPI_Allreduce(&n_particles_gas_split, &MPI_n_particles_gas_split, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(&n_particles_dm_split, &MPI_n_particles_dm_split, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
     if(ThisTask == 0)
     {
         if(MPI_n_particles_merged > 0 || MPI_n_particles_split > 0)
         {
-            printf("Particle split/merge check: %d particles merged, %d particles split (%d gas) \n", MPI_n_particles_merged,MPI_n_particles_split,MPI_n_particles_gas_split);
+            // printf("Particle split/merge check: %d particles merged, %d particles split (%d gas) \n", MPI_n_particles_merged,MPI_n_particles_split,MPI_n_particles_gas_split);
+            printf("Particle split/merge check: %d particles merged, %d particles split (%d gas, %d dm) \n", MPI_n_particles_merged,MPI_n_particles_split,MPI_n_particles_gas_split, MPI_n_particles_dm_split);
         }
     }
     /* the reduction or increase of n_part by MPI_n_particles_merged will occur in rearrange_particle_sequence, which -must- be called immediately after this routine! */
@@ -399,7 +420,8 @@ int split_particle_i(int i, int n_particles_split, int i_nearest)
         endrun(8888);
     }
 #ifndef SPAWN_PARTICLES_VIA_SPLITTING
-    if(P[i].Type != 0) {printf("Splitting Non-Gas Particle: i=%d ID=%llu Type=%d \n",i,(unsigned long long) P[i].ID,P[i].Type);} //fflush(stdout); endrun(8889);
+    // if(P[i].Type != 0) {printf("Splitting Non-Gas Particle: i=%d ID=%llu Type=%d \n",i,(unsigned long long) P[i].ID,P[i].Type);} //fflush(stdout); endrun(8889);
+    if((P[i].Type != 0) && (P[i].Type != 1) ) {printf("Splitting Non-Gas Particle: i=%d ID=%llu Type=%d \n",i,(unsigned long long) P[i].ID,P[i].Type);} //fflush(stdout); endrun(8889);
 #endif
 
     /* here is where the details of the split are coded, the rest is bookkeeping */
