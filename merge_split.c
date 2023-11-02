@@ -368,9 +368,9 @@ void merge_and_split_particles(void)
             int did_split = split_particle_i(i, n_particles_split, Ptmp[i].target_index);
             // if(did_split == 1) {n_particles_split++; if(P[i].Type==0) {n_particles_gas_split++;}} else {failed_splits++;}
             if(did_split == 1) {n_particles_split++; 
-                if(P[i].Type==0) {n_particles_gas_split++;}} 
-                else if (P[i].Type == 1) {n_particles_dm_split++;}
-                else {failed_splits++;}
+                if(P[i].Type==0) {n_particles_gas_split++;}
+                else if (P[i].Type == 1) {n_particles_dm_split++;}}
+            else {failed_splits++;}
         }
     }
     if(failed_splits) {printf ("On Task=%d with NumPart=%d we tried and failed to split %d elements, after running out of space (REDUC_FAC*All.MaxPart=%d, REDUC_FAC*All.MaxPartGas=%d ).\n We did split %d total (%d gas) elements. Try using more nodes, or raising PartAllocFac, or changing the split conditions to avoid this.\n", ThisTask, NumPart, failed_splits, (int)(REDUC_FAC*All.MaxPart), (int)(REDUC_FAC*All.MaxPartGas), n_particles_split, n_particles_gas_split); fflush(stdout);}
@@ -431,7 +431,18 @@ int split_particle_i(int i, int n_particles_split, int i_nearest)
     k=0;
     phi = 2.0*M_PI*get_random_number(i+1+ThisTask); // random from 0 to 2pi //
     cos_theta = 2.0*(get_random_number(i+3+2*ThisTask)-0.5); // random between 1 to -1 //
-    double d_r = 0.25 * KERNEL_CORE_SIZE*PPP[i].Hsml; // needs to be epsilon*Hsml where epsilon<<1, to maintain stability //
+    double d_r;
+    switch ( P[i].Type )
+    {
+    case 1:
+        d_r = 0.25 * KERNEL_CORE_SIZE*PPP[i].AGS_Hsml;
+        break;
+    
+    default:
+        d_r = 0.25 * KERNEL_CORE_SIZE*PPP[i].Hsml;
+        break;
+    }
+    // double d_r = 0.25 * KERNEL_CORE_SIZE*PPP[i].Hsml; // needs to be epsilon*Hsml where epsilon<<1, to maintain stability //
     double dp[3], r_near=0; for(k = 0; k < 3; k++) {dp[k] =P[i].Pos[k] - P[i_nearest].Pos[k];}
     NEAREST_XYZ(dp[0],dp[1],dp[2],1);
     for(k = 0; k < 3; k++) {r_near += dp[k]*dp[k];}
