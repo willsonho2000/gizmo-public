@@ -92,6 +92,7 @@ int does_particle_need_to_be_split(int i)
 #ifdef BH_DEBUG_SPAWN_JET_TEST
     if(P[i].ID==All.AGNWindID && P[i].Type==0) {return 0;}
 #endif
+    if ( (P[i].Type == 1) && (P[i].Mass >= 8.0e-9)) ) {return 0;}   // set the threshold for dm particle (80 M_sun)
     if(P[i].Mass >= (All.MaxMassForParticleSplit*target_mass_renormalization_factor_for_mergesplit(i,1))) {return 1;}
 #ifdef PARTICLE_MERGE_SPLIT_TRUELOVE_REFINEMENT
     if(P[i].Type == 0)
