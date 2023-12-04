@@ -12,3 +12,6 @@ scripts/tested_problems/
 *.out 
 *.err      
 
+# EXEC file & Config
+Config.sh
+GIZMO_test

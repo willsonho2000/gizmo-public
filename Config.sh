@@ -556,8 +556,9 @@ OUTPUT_TEMPERATURE             # output the in-code gas temperature
 # ----- Particle Merging/Splitting/Deletion/Boundaries
 #PREVENT_PARTICLE_MERGE_SPLIT   # don't allow gas particle splitting/merging operations
 #PARTICLE_EXCISION              # enable dynamical excision (remove particles within some radius)
-MERGESPLIT_HARDCODE_MAX_MASS=(2.0e-10)   # manually set maximum mass for particle merge-split operations (in code units): useful for snapshot restarts and other special circumstances
-MERGESPLIT_HARDCODE_MIN_MASS=(2.0e-11)   # manually set minimum mass for particle merge-split operations (in code units): useful for snapshot restarts and other special circumstances
+DM_SPLIT                                 # allow dm particles to be split
+MERGESPLIT_HARDCODE_MAX_MASS=(2.0e-11)   # manually set maximum mass for particle merge-split operations (in code units): useful for snapshot restarts and other special circumstances
+MERGESPLIT_HARDCODE_MIN_MASS=(2.0e-12)   # manually set minimum mass for particle merge-split operations (in code units): useful for snapshot restarts and other special circumstances
 #PARTICLE_MERGE_SPLIT_EVERY_TIMESTEP # force merge/split operations to occur every timestep, instead of only on domain decomposition steps
 # --------------------
 # ----- Radiation-Hydrodynamics Special Options for Test Problems + Disabled or Other Special Features
