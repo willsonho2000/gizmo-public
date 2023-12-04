@@ -78,8 +78,11 @@ int does_particle_need_to_be_merged(int i)
     when particles become too massive, but it could also be done when Hsml gets very large, densities are high, etc */
 int does_particle_need_to_be_split(int i)
 {
-    // if(P[i].Type != 0) {return 0;} // default behavior: only gas particles split //
+#ifdef DM_SPLIT
     if ( (P[i].Type != 0) && (P[i].Type != 1) ) {return 0;} // only gas and dm particles split //
+#else
+    if(P[i].Type != 0) {return 0;} // default behavior: only gas particles split //
+#endif
 #ifdef PREVENT_PARTICLE_MERGE_SPLIT
     return 0;
 #else
@@ -92,7 +95,7 @@ int does_particle_need_to_be_split(int i)
 #ifdef BH_DEBUG_SPAWN_JET_TEST
     if(P[i].ID==All.AGNWindID && P[i].Type==0) {return 0;}
 #endif
-    if ( (P[i].Type == 1) && (P[i].Mass >= 2.0e-8)) ) {return 0;}   // set the threshold for dm particle (200 M_sun)
+    if ( (P[i].Type == 1) && (P[i].Mass <= 2.0e-8) ) {return 0;}   // set the threshold for dm particle (200 M_sun)
     if(P[i].Mass >= (All.MaxMassForParticleSplit*target_mass_renormalization_factor_for_mergesplit(i,1))) {return 1;}
 #ifdef PARTICLE_MERGE_SPLIT_TRUELOVE_REFINEMENT
     if(P[i].Type == 0)
