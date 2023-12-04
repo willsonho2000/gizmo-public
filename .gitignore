@@ -15,3 +15,6 @@ scripts/tested_problems/
 # EXEC file & Config
 Config.sh
 GIZMO_test
+conpile_time_info.c
+GIZMO_config.h
+submit*.sh
