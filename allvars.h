@@ -2476,9 +2476,9 @@ extern ALIGN(32) struct particle_data
     MyFloat Hsml;                   /*!< search radius around particle for neighbors/interactions */
     MyFloat NumNgb;                 /*!< neighbor number around particle */
     MyFloat DhsmlNgbFactor;        /*!< correction factor needed for varying kernel lengths */
+    MyFloat GradRho[3];             /*!< gas density gradient evaluated simply from the neighboring particles, for collisionless centers */
 #ifdef DO_DENSITY_AROUND_STAR_PARTICLES
     MyFloat DensAroundStar;         /*!< gas density in the neighborhood of the collisionless particle (evaluated from neighbors) */
-    MyFloat GradRho[3];             /*!< gas density gradient evaluated simply from the neighboring particles, for collisionless centers */
 #endif
 #ifdef RT_USE_TREECOL_FOR_NH
     MyFloat ColumnDensityBins[RT_USE_TREECOL_FOR_NH];     /*!< angular bins for column density */
