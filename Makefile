@@ -1315,11 +1315,11 @@ endif
 # if grackle libraries are installed they must be a shared library as defined here
 ifeq (COOL_GRACKLE,$(findstring COOL_GRACKLE,$(CONFIGVARS)))
 OPTIONS += -DCONFIG_BFLOAT_8
-GRACKLEINCL =
-GRACKLELIBS = -lgrackle
+GRACKLEINCL = -I/tiara/home/myho/local/include
+GRACKLELIBS = -L/tiara/home/myho/local/lib -lgrackle
 else
-GRACKLEINCL =
-GRACKLELIBS =
+GRACKLEINCL = -I/tiara/home/myho/local/include
+GRACKLELIBS = -L/tiara/home/myho/local/lib -lgrackle
 endif
 
 # linking libraries (includes machine-dependent options above)

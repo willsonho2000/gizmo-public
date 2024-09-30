@@ -95,7 +95,7 @@ int does_particle_need_to_be_split(int i)
 #ifdef BH_DEBUG_SPAWN_JET_TEST
     if(P[i].ID==All.AGNWindID && P[i].Type==0) {return 0;}
 #endif
-    // if ( (P[i].Type == 1) && (P[i].Mass <= 5.0e-9) ) {return 0;}   // set the threshold for dm particle (50 M_sun)
+    if ( (P[i].Type == 1) && (P[i].Mass <= 1.0e-8) ) {return 0;}   // set the threshold for dm particle (50 M_sun)
     if(P[i].Mass >= (All.MaxMassForParticleSplit*target_mass_renormalization_factor_for_mergesplit(i,1))) {return 1;}
 #ifdef PARTICLE_MERGE_SPLIT_TRUELOVE_REFINEMENT
     if(P[i].Type == 0)
@@ -320,12 +320,14 @@ void merge_and_split_particles(void)
                 switch ( P[i].Type )
                 {
                 case 1:
-                    numngb_inbox = ngb_treefind_variable_targeted(P[i].Pos,PPP[i].AGS_Hsml,-1,&startnode,0,&dummy,&dummy,Pi_BITFLAG); // search for particles of matching type    
-                    // numngb_inbox = ngb_treefind_variable_targeted(P[i].Pos,PPP[i].Hsml,-1,&startnode,0,&dummy,&dummy,Pi_BITFLAG); // search for particles of matching type 
+#ifdef DM_SPLIT
+                    numngb_inbox = ngb_treefind_variable_targeted(P[i].Pos,PPP[i].AGS_Hsml,-1,&startnode,0,&dummy,&dummy,Pi_BITFLAG); // search for particles of matching type
                     break;
-                
+#endif       
+                    numngb_inbox = ngb_treefind_variable_targeted(P[i].Pos,PPP[i].Hsml,-1,&startnode,0,&dummy,&dummy,Pi_BITFLAG); // search for particles of matching type 
+                    break;     
                 default:
-                    // numngb_inbox = ngb_treefind_variable_targeted(P[i].Pos,PPP[i].Hsml,-1,&startnode,0,&dummy,&dummy,Pi_BITFLAG); // search for particles of matching type
+                    numngb_inbox = ngb_treefind_variable_targeted(P[i].Pos,PPP[i].Hsml,-1,&startnode,0,&dummy,&dummy,Pi_BITFLAG); // search for particles of matching type
                     break;
                 }
                 // numngb_inbox = ngb_treefind_variable_targeted(P[i].Pos,PPP[i].Hsml,-1,&startnode,0,&dummy,&dummy,Pi_BITFLAG); // search for particles of matching type
@@ -440,8 +442,11 @@ int split_particle_i(int i, int n_particles_split, int i_nearest)
     switch ( P[i].Type )
     {
     case 1:
+#ifdef DM_SPLIT
         d_r = 0.25 * KERNEL_CORE_SIZE*PPP[i].AGS_Hsml;
-        // d_r = 0.25 * KERNEL_CORE_SIZE*PPP[i].Hsml;
+        break;
+#endif
+        d_r = 0.25 * KERNEL_CORE_SIZE*PPP[i].Hsml;
         break;
     
     default:
